@@ -1,10 +1,11 @@
 # Django settings for tinkhan project.
+import os
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
-    # ('Your Name', 'your_email@example.com'),
+    ('John Weaver', 'john@saebyn.info',),
 )
 
 MANAGERS = ADMINS
@@ -20,7 +21,7 @@ DATABASES['default'] = dj_database_url.config(default='postgres://postgres@local
 # http://en.wikipedia.org/wiki/List_of_tz_zones_by_name
 # although not all choices may be available on all operating systems.
 # In a Windows environment this must be set to your system time zone.
-TIME_ZONE = 'America/Chicago'
+TIME_ZONE = 'America/Los_Angeles'
 
 # Language code for this installation. All choices can be found here:
 # http://www.i18nguy.com/unicode/language-identifiers.html
@@ -52,11 +53,12 @@ MEDIA_URL = ''
 # Don't put anything in this directory yourself; store your static files
 # in apps' "static/" subdirectories and in STATICFILES_DIRS.
 # Example: "/home/media/media.lawrence.com/static/"
+# Not used.
 STATIC_ROOT = ''
 
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = '/static/'
+STATIC_URL = 'http://tinkhan-static2.s3-website-us-east-1.amazonaws.com/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -119,6 +121,7 @@ INSTALLED_APPS = (
     'gunicorn',
     'kombu.transport.django',
     'djcelery',
+    'storages',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -156,3 +159,22 @@ BROKER_BACKEND = 'django'
 
 import djcelery
 djcelery.setup_loader()
+
+# static storage config
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+# see http://developer.yahoo.com/performance/rules.html#expires
+AWS_HEADERS = {
+    'Expires': 'Fri, 1 Apr 2022 12:00:00 GMT',
+    'Cache-Control': 'max-age=86400',
+}
+
+STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+try:
+    from settings_local import *
+except ImportError:
+    pass
