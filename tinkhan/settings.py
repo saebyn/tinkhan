@@ -122,6 +122,10 @@ INSTALLED_APPS = (
     'kombu.transport.django',
     'djcelery',
     'storages',
+    'south',
+
+    # our apps
+    'khan',
 )
 
 # A sample logging configuration. The only tangible logging
