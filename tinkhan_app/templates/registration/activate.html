@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+
+{% block title %}{% trans 'Account Activation ' %}{% endblock %}
+
+{% block content %}
+
+{% if account %}
+<h2>{% trans "Account successfully activated" %}</h2>
+<p><a href="{% url auth_login %}">{% trans "Continue by Logging In" %}</a></p>
+{% else %}
+<h2 class="error">{% trans "Account activation failed" %}</h2>
+{% url registration_register as registration_url %}
+<p>{% blocktrans with registration_url=registration_url %}
+Please check that the link in your email was not broken. You may have to <a href="{{ registration_url }}">register again</a>.
+{% endblocktrans %}</p>
+{% endif %}
+
+{% endblock %}

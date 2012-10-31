@@ -1,5 +1,6 @@
 # Django settings for tinkhan project.
 import os
+import urlparse
 from datetime import timedelta
 
 DEBUG = False
@@ -125,9 +126,16 @@ INSTALLED_APPS = (
     'storages',
     'south',
 
+    'errortemplates',
+    'tos',
+    'registration',
+    'profiles',
+    'bootstrapform',
+
     # our apps
     'khan',
     'tincan_exporter',
+    'tinkhan_app',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -159,9 +167,18 @@ LOGGING = {
     }
 }
 
+AUTH_PROFILE_MODULE = 'tinkhan_app.UserProfile'
+ACCOUNT_ACTIVATION_DAYS = 3
+#LOGIN_REDIRECT_URL = '/'
 
-# djcelery settings
-BROKER_BACKEND = 'django'
+REDIS_URL = os.getenv('REDISTOGO_URL', 'redis://localhost:6379/1')
+REDIS_CONFIG = urlparse.urlparse(REDIS_URL)
+
+# celery settings
+BROKER_URL = REDIS_URL
+CELERY_SEND_TASK_ERROR_EMAILS = True
+CELERY_RESULT_BACKEND = REDIS_URL
+
 
 CELERYBEAT_SCHEDULE = {
     'update-badge-categories': {
@@ -181,6 +198,20 @@ CELERY_TIMEZONE = 'UTC'
 import djcelery
 djcelery.setup_loader()
 
+# cache configuration
+
+CACHES = {
+    'default': {
+        'BACKEND': 'redis_cache.RedisCache',
+        'LOCATION': '%s:%s' % (REDIS_CONFIG.hostname, REDIS_CONFIG.port),
+        'OPTIONS': {
+            'DB': int(REDIS_CONFIG.path[1:]),
+            'PASSWORD': REDIS_CONFIG.password,
+            'PARSER_CLASS': 'redis.connection.HiredisParser'
+        }
+    }
+}
+
 # static storage config
 DEFAULT_FILE_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
@@ -194,6 +225,9 @@ AWS_HEADERS = {
 }
 
 STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
+
+TINKHAN_OAUTH_CONSUMER_KEY = ''
+TINKHAN_OAUTH_CONSUMER_SECRET = ''
 
 try:
     from settings_local import *

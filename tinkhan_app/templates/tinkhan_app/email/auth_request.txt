@@ -1,0 +1,15 @@
+{% load i18n %}
+{% load url from future %}
+
+{% blocktrans with name=person.name requestor_name=person.account.user.get_full_name %}
+Hi {{name}},
+
+{{requestor_name}} has requested that you update your
+learning records from Khan Academy. Go to the following URL to get started:
+{% endblocktrans %}
+
+http://{{ site.domain }}{% url "authorize_khan_import" person.pk %}
+
+{% blocktrans name=site.name%}
+-- The {{ name }} robot
+{% endblocktrans %}

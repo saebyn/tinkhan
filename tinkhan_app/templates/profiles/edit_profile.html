@@ -1,0 +1,16 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "profiles/base.html" %}
+{% load i18n bootstrap %}
+
+{% block content %}
+<form method="post" action="." class="form-horizontal">
+  {% csrf_token %}
+  <fieldset>
+    {{ form|bootstrap }}
+  </fieldset>
+
+  <div class="form-actions">
+    <input type="submit" class="btn btn-primary" value="{% trans 'Update' %}">
+  </div>
+</form>
+{% endblock %}

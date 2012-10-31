@@ -1,0 +1,15 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n %}
+{% load url from future %}
+
+{% block content %}
+<h1>{% trans "Woops! A bit of trouble with that." %}</h1>
+
+<p>
+{% url "authorize_khan_import" person.pk as authorize_url %}
+{% blocktrans with authorize_url=authorize_url %}
+There was a problem with the authorization process. An administrator has already been notified of the problem. Give it a few minutes and <a href="{{ authorize_url }}">try again</a>
+{% endblocktrans %}
+</p>
+{% endblock %}

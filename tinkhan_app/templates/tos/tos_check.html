@@ -1,0 +1,25 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans 'Accept New Terms of Service' %}{% endblock %}
+
+{% block content %}
+  {% if note %}
+    <h2>{{ note }}</note>
+  {% else %}
+    <h2>{% trans 'Terms of Service as of' %} {{ tos.created|date:"SHORT_DATE_FORMAT" }}</h2>
+  {% endif %}
+  
+  {{ tos.content|safe }}
+  
+  <h2>Accept Terms of Service?</h2>
+  
+  <form method="post" action="{% url tos_check_tos %}">
+    {% csrf_token %}
+    <div class="form-actions">
+      <input type="submit" name="accept" value="accept" class="btn btn-primary">
+      <input type="submit" name="accept" value="reject" class="btn btn-warning">
+    </div>
+  </form>
+{% endblock %}

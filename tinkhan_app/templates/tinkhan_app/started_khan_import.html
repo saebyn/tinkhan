@@ -1,0 +1,13 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block content %}
+<h1>{% trans "That's it!" %}</h1>
+
+<p>
+{% blocktrans with company=person.account.company %}
+Your newest Khan Academy learning experiences are being gathered and sent to {{ company }} now.
+{% endblocktrans %}
+</p>
+{% endblock %}

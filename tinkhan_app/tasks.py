@@ -29,10 +29,12 @@ def send_email_request_for_userdata_update_for_account(account_profile):
     for person in account_profile.person_set.all():
         # 1. render text context to email template
         email_template = loader.get_template('tinkhan_app/email/auth_request.txt')
+        site = Site.objects.get_current()
         context = Context({'person': person,
-                           'site': Site.objects.get_current()})
+                           'site': site})
         email_contents = email_template.render(context)
-        emails.append((_('Update %s with your latest work from Khan Academy via tinkhan') % account_profile.company,
+        subject = _('Update %s with your latest work from Khan Academy via %s')
+        emails.append((subject % (account_profile.company, site.display_name,),
                        email_contents,
                        settings.FROM_EMAIL,
                        [person.email]))
@@ -49,9 +51,9 @@ def update_person(oauth_hook, person):
     #   if associated with it
     # - wrap the userdata instance in our implementation of StatementSource
     #   and send that to the tincan_exporter.tasks.export_statements task
-    userdata = fetch_user.delay(oauth_hook)
+    userdata = fetch_user(oauth_hook)
 
     person.userdata = userdata
     person.save()
 
-    export_statements.delay([UserDataStatementSource(userdata)], person.account.tcapi_endpoint)
+    export_statements([UserDataStatementSource(userdata)], person.account.tcapi_endpoint)

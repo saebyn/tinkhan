@@ -74,6 +74,9 @@ class Video(BaseModel):
 
     objects = VideoManager()
 
+    def __unicode__(self):
+        return self.title
+
 
 class Exercise(BaseModel):
     topic = models.ForeignKey(Topic, null=True, blank=True, related_name='exercises')
@@ -93,6 +96,9 @@ class Exercise(BaseModel):
     seconds_per_fast_problem = models.FloatField()
 
     objects = ExerciseManager()
+
+    def __unicode__(self):
+        return self.name
 
 
 class BadgeCategory(BaseModel):
@@ -149,9 +155,9 @@ class Performance(UserActivityModelMixin, BaseModel):
     """
     exercise = models.ForeignKey(Exercise)
     user = models.ForeignKey('UserData')
-    first_done = models.DateTimeField()
-    last_done = models.DateTimeField()
-    last_review = models.DateTimeField()
+    first_done = models.DateTimeField(null=True, blank=True)
+    last_done = models.DateTimeField(null=True, blank=True)
+    last_review = models.DateTimeField(null=True, blank=True)
     longest_streak = models.PositiveIntegerField()
     proficient_date = models.DateTimeField(null=True, blank=True)
     streak = models.PositiveIntegerField()
@@ -182,7 +188,7 @@ class UserData(BaseModel):
     user_id = models.CharField(max_length=255, unique=True, db_index=True)
     prettified_user_email = models.CharField(max_length=255)
     joined = models.DateTimeField()
-    last_activity = models.DateTimeField()
+    last_activity = models.DateTimeField(null=True, blank=True)
     points = models.IntegerField()
     total_seconds_watched = models.IntegerField()
 

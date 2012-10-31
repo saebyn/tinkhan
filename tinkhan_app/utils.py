@@ -6,5 +6,5 @@ from tincan_exporter.utils import StatementSource
 
 
 class UserDataStatementSource(StatementSource):
-    def __init__(self):
+    def __init__(self, userdata):
         pass

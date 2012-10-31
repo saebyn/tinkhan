@@ -5,6 +5,8 @@ from khan.models import Topic, Video, VideoSource, Exercise, BadgeCategory,\
         Badge, BadgeEarn, Performance, Watch, UserData
 
 
+# TODO add better admin
+
 admin.site.register(Topic)
 admin.site.register(Video)
 admin.site.register(VideoSource)

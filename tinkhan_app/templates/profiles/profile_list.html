@@ -1,0 +1,14 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans "Users" %}{% endblock %}
+
+{% block content %}
+  <h3>{{ object_list.count }} {% trans 'Users' %}</h3>
+  <ul>
+  {% for user in object_list %}
+    <li><a href="{{ user.get_profile.get_absolute_url }}">{{ user.username }}</a></li>
+  {% endfor %}
+  </ul>
+{% endblock %}

@@ -87,7 +87,7 @@ def fetch_userdata(oauth_hook):
 
 
 @celery.task(rate_limit='6/h')
-def fetch_user_exercises(oauth_hook, userdata):
+def fetch_user_exercises(userdata, oauth_hook):
     logger.info('Fetching user exercise data')
 
     try:
@@ -111,7 +111,7 @@ def fetch_user_exercises(oauth_hook, userdata):
 
 
 @celery.task(rate_limit='6/h')
-def fetch_user_videos(oauth_hook, userdata):
+def fetch_user_videos(userdata, oauth_hook):
     logger.info('Fetching user video data')
 
     try:
@@ -135,7 +135,7 @@ def fetch_user_videos(oauth_hook, userdata):
 
 
 @celery.task(rate_limit='6/h')
-def fetch_user_badges(oauth_hook, userdata):
+def fetch_user_badges(userdata, oauth_hook):
     logger.info('Fetching user badge data')
 
     try:

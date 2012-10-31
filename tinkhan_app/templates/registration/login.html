@@ -1,0 +1,10 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n %}
+
+{% block title %}{% trans 'Login' %}{% endblock %}
+
+{% block content %}
+{% include "registration/bare_login_form.html" %}
+{% endblock %}
+

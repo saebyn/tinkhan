@@ -1,0 +1,17 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% load i18n bootstrap %}
+<h2>{% trans "Register" %}</h2>
+<p>
+{% blocktrans %}
+We will use the email address you provide to communicate with you about account changes and important notices concerning this site. Please add this site to your safe list to ensure it is not blocked by your email filtering program.
+{% endblocktrans %}
+</p>
+<form method="post" action="." class="form-horizontal">{% csrf_token %}
+  <fieldset>
+    {{ form|bootstrap }}
+  </fieldset>
+
+  <div class="form-actions">
+    <input type="submit" class="btn btn-primary" value="{% trans 'Register New Account' %}">
+  </div>
+</form>

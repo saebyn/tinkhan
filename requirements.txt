@@ -7,8 +7,13 @@ boto==2.6.0
 celery==3.0.11
 distribute==0.6.24
 dj-database-url==0.2.1
+django-bootstrap-form==2.0.5
 django-celery==3.0.11
+-e git+https://github.com/saebyn/django_errortemplates.git@master#egg=errortemplates
+django-profiles==0.2
+django-registration==0.8
 django-storages==1.1.5
+-e git+https://github.com/saebyn/django-tos.git@master#egg=django_tos
 gunicorn==0.15.0
 kombu==2.4.7
 psycopg2==2.4.5
@@ -17,3 +22,6 @@ pytz==2012g
 requests==0.14.2
 requests-oauth==0.4.1
 wsgiref==0.1.2
+django-celery-with-redis==3.0
+redis==2.7.1
+django-redis-cache==0.9.5

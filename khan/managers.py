@@ -33,15 +33,16 @@ class ExerciseManager(models.Manager):
             except Performance.DoesNotExist:
                 performance = Performance(user=user, exercise=exercise)
 
-            performance.first_done = performance_data['first_done']
-            performance.last_done = performance_data['last_done']
-            performance.last_review = performance_data['last_review']
-            performance.longest_streak = performance_data['longest_streak']
-            performance.proficient_date = performance_data.get('proficient_date', None)
-            performance.streak = performance_data['streak']
-            performance.total_done = performance_data['total_done']
-            performance.summative = performance_data['summative']
-            performance.seconds_per_fast_problem = performance_data['seconds_per_fast_problem']
+            performance.first_done = performance_data.get('first_done', None) or None
+            performance.last_done = performance_data.get('last_done', None) or None
+            performance.last_review = performance_data.get('last_review', None) or None
+            performance.proficient_date = performance_data.get('proficient_date', None) or None
+
+            performance.longest_streak = performance_data.get('longest_streak', 0) or 0
+            performance.streak = performance_data.get('streak', 0) or 0
+            performance.total_done = performance_data.get('total_done', 0) or 0
+            performance.summative = performance_data.get('summative', False) or False
+            performance.seconds_per_fast_problem = performance_data.get('seconds_per_fast_problem', 0) or 0
             performance.save()
 
             performances.append(performance)
@@ -188,15 +189,30 @@ class UserDataManager(models.Manager):
             obj.total_seconds_watched = total_seconds_watched
             obj.save()
 
-        obj.proficient_exercises.all().delete()
-        for exercise in proficient_exercises:
+        # this code and the similar pair elsewhere in the file needs to be refactored
+        present = frozenset(x[0] for x in obj.proficient_exercises.values_list('khan_id'))
+        correct = frozenset(proficient_exercises)
+        absent = correct - present
+        extra = present - correct
+
+        for exercise in extra:
+            obj.proficient_exercises.remove(Exercise.objects.get(khan_id=exercise))
+
+        for exercise in absent:
             try:
                 obj.proficient_exercises.add(Exercise.objects.get(khan_id=exercise))
             except Exercise.DoesNotExist:
                 logger.warning('Failed to find exercise "%s" for proficient exercises while adding "%s"' % (exercise, data['user_id']))
 
-        obj.suggested_exercises.all().delete()
-        for exercise in suggested_exercises:
+        present = frozenset(x[0] for x in obj.suggested_exercises.values_list('khan_id'))
+        correct = frozenset(suggested_exercises)
+        absent = correct - present
+        extra = present - correct
+
+        for exercise in extra:
+            obj.suggested_exercises.remove(Exercise.objects.get(khan_id=exercise))
+
+        for exercise in absent:
             try:
                 obj.suggested_exercises.add(Exercise.objects.get(khan_id=exercise))
             except Exercise.DoesNotExist:
