@@ -8,7 +8,8 @@ from django.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.contenttypes import generic
 
-from khan.managers import TopicManager, UserDataManager
+from khan.managers import TopicManager, UserDataManager, ExerciseManager,\
+        VideoManager, BadgeManager
 
 
 class BaseModel(models.Model):
@@ -24,6 +25,14 @@ class UserActivityModelMixin(models.Model):
 
     class Meta:
         abstract = True
+
+    def save(self, *args, **kwargs):
+        self.synchronized = False
+        return super(UserActivityModelMixin, self).save(*args, **kwargs)
+
+    def syncronize(self):
+        self.synchronized = True
+        return super(UserActivityModelMixin, self).save()
 
 
 class Topic(BaseModel):
@@ -50,7 +59,7 @@ class Video(BaseModel):
     topic = models.ForeignKey(Topic, null=True, blank=True, related_name='videos')
     title = models.CharField(max_length=255)
     description = models.TextField()
-    position = models.IntegerField()
+    position = models.IntegerField(null=True, blank=True)
     keywords = models.TextField()
     # duration in seconds
     duration = models.PositiveIntegerField()
@@ -62,6 +71,8 @@ class Video(BaseModel):
     views = models.PositiveIntegerField()
     # `date_added` - When the video was added to Khan Academy
     date_added = models.DateTimeField()
+
+    objects = VideoManager()
 
 
 class Exercise(BaseModel):
@@ -79,7 +90,9 @@ class Exercise(BaseModel):
     covers = models.ManyToManyField('self', symmetrical=False, related_name='covered_by+')
     h_position = models.IntegerField()
     v_position = models.IntegerField()
-    seconds_per_fast_problem = models.IntegerField()
+    seconds_per_fast_problem = models.FloatField()
+
+    objects = ExerciseManager()
 
 
 class BadgeCategory(BaseModel):
@@ -105,6 +118,8 @@ class Badge(BaseModel):
     # `name`
     khan_id = models.SlugField(max_length=255, unique=True)
     points = models.PositiveIntegerField()
+
+    objects = BadgeManager()
 
 
 class BadgeEarn(UserActivityModelMixin, BaseModel):
@@ -138,9 +153,11 @@ class Performance(UserActivityModelMixin, BaseModel):
     last_done = models.DateTimeField()
     last_review = models.DateTimeField()
     longest_streak = models.PositiveIntegerField()
-    proficient_date = models.DateTimeField()
+    proficient_date = models.DateTimeField(null=True, blank=True)
     streak = models.PositiveIntegerField()
     total_done = models.PositiveIntegerField()
+    summative = models.BooleanField()
+    seconds_per_fast_problem = models.FloatField()
 
 
 class Watch(UserActivityModelMixin, BaseModel):

@@ -1,5 +1,6 @@
 # Django settings for tinkhan project.
 import os
+from datetime import timedelta
 
 DEBUG = False
 TEMPLATE_DEBUG = DEBUG
@@ -126,6 +127,7 @@ INSTALLED_APPS = (
 
     # our apps
     'khan',
+    'tincan_exporter',
 )
 
 # A sample logging configuration. The only tangible logging
@@ -160,6 +162,21 @@ LOGGING = {
 
 # djcelery settings
 BROKER_BACKEND = 'django'
+
+CELERYBEAT_SCHEDULE = {
+    'update-badge-categories': {
+        'task': 'khan.tasks.update_badge_categories',
+        'schedule': timedelta(hours=2),
+        'args': (),
+    },
+    'update-topic-tree': {
+        'task': 'khan.tasks.update_topic_tree',
+        'schedule': timedelta(hours=2),
+        'args': (),
+    },
+}
+
+CELERY_TIMEZONE = 'UTC'
 
 import djcelery
 djcelery.setup_loader()

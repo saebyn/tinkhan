@@ -15,9 +15,38 @@ class ExerciseManager(models.Manager):
         """
         Load the UserData.exercise_performances m2m.
         """
-        # TODO
-        obj = None
-        return obj
+        from khan.models import Performance
+
+        performances = []
+
+        for performance_data in data:
+            assert performance_data['kind'] == 'UserExercise'
+
+            try:
+                exercise = self.get(khan_id=performance_data['exercise'])
+            except self.model.DoesNotExist:
+                logger.warning('Failed to find exercise "%(exercise)s" for performance for "%(user)s"' % performance_data)
+                continue
+
+            try:
+                performance = Performance.objects.get(user=user, exercise=exercise)
+            except Performance.DoesNotExist:
+                performance = Performance(user=user, exercise=exercise)
+
+            performance.first_done = performance_data['first_done']
+            performance.last_done = performance_data['last_done']
+            performance.last_review = performance_data['last_review']
+            performance.longest_streak = performance_data['longest_streak']
+            performance.proficient_date = performance_data.get('proficient_date', None)
+            performance.streak = performance_data['streak']
+            performance.total_done = performance_data['total_done']
+            performance.summative = performance_data['summative']
+            performance.seconds_per_fast_problem = performance_data['seconds_per_fast_problem']
+            performance.save()
+
+            performances.append(performance)
+
+        return performances
 
 
 class VideoManager(models.Manager):
@@ -25,19 +54,106 @@ class VideoManager(models.Manager):
         """
         Load the UserData.watched_videos m2m.
         """
-        # TODO
-        obj = None
-        return obj
+        from khan.models import Watch
+
+        watched = []
+
+        for watch_data in data:
+            assert watch_data['kind'] == 'UserVideo'
+
+            video, created = self.get_or_create(
+                khan_id=watch_data['video']['readable_id'],
+                defaults=dict(
+                    title=watch_data['video']['title'],
+                    description=watch_data['video']['description'],
+                    duration=watch_data['video']['duration'],
+                    url=watch_data['video']['ka_url'],
+                    youtube_id=watch_data['video']['youtube_id'],
+                    views=watch_data['video']['views'],
+                    date_added=watch_data['video']['date_added'],
+                ))
+
+            try:
+                watch = Watch.objects.get(user=user, video=video)
+            except Watch.DoesNotExist:
+                watch = Watch(user=user, video=video)
+
+            watch.completed = watch_data['completed']
+            watch.last_second_watched = watch_data['last_second_watched']
+            watch.last_watched = watch_data['last_watched']
+            watch.points = watch_data['points']
+            watch.seconds_watched = watch_data['seconds_watched']
+            watch.save()
+
+            watched.append(watch)
+
+        return watched
 
 
 class BadgeManager(models.Manager):
-    def load(self, data, user):
+    def load(self, categories_data, data, user):
         """
         Load badges, badge categories, and the UserData.earned_badges m2m.
         """
-        # TODO
-        obj = None
-        return obj
+        from khan.models import BadgeCategory, BadgeEarn, Exercise
+
+        for category_data in categories_data:
+            try:
+                category = BadgeCategory.objects.get(khan_id=category_data['category'])
+            except BadgeCategory.DoesNotExist:
+                category = BadgeCategory(khan_id=category_data['category'])
+
+            category.description = category_data['description']
+            category.type_label = category_data['type_label']
+            category.chart_icon_src = category_data['chart_icon_src']
+            category.icon_src = category_data['icon_src']
+            category.large_icon_src = category_data['large_icon_src']
+            category.save()
+
+        badges = []
+
+        for badge_data in data:
+            try:
+                badge = self.get(khan_id=badge_data['name'])
+            except self.model.DoesNotExist:
+                badge = self.model(khan_id=badge_data['name'])
+
+            badge.category = BadgeCategory.objects.get(khan_id=badge_data['badge_category'])
+            badge.name = badge_data['description']
+            badge.description = badge_data['safe_extended_description']
+            badge.points = badge_data['points']
+            badge.save()
+
+            badges.append(badge)
+
+            new_badges = []
+
+            existing_badges = BadgeEarn.objects.filter(user=user, badge=badge)\
+                    .values_list('badge__khan_id', 'date_earned')
+
+            for user_badge in badge_data.get('user_badges', []):
+                assert user_badge['kind'] == 'UserBadge'
+                assert user_badge['badge_name'] == badge.khan_id
+                if (user_badge['badge_name'], user_badge['date']) not in existing_badges:
+                    badge_earn = BadgeEarn(
+                        user=user,
+                        badge=badge,
+                        date_earned=user_badge['date'],
+                        points_earned=user_badge['points_earned'],
+                        target_context_name=user_badge['target_context_name']
+                    )
+
+                    if user_badge['target_context']['kind'] == 'Exercise':
+                        try:
+                            badge_earn.target_context = Exercise.objects.get(khan_id=user_badge['target_context']['name'])
+                        except Exercise.DoesNotExist:
+                            logger.warning('Failed to find exercise for badge "%(badge_name)s" for user "%(user)s"' % user_badge)
+
+                    new_badges.append(badge_earn)
+
+            BadgeEarn.objects.bulk_create(new_badges)
+
+        return badges
 
 
 class UserDataManager(models.Manager):
