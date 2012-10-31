@@ -326,18 +326,32 @@ class TopicManager(models.Manager):
             obj.topic = topic
             obj.save()
 
-        obj.prerequisites.all().delete()
-        for prerequisite in prerequisites:
-            try:
-                obj.prerequisites.add(Exercise.objects.get(khan_id=prerequisite))
-            except Exercise.DoesNotExist:
-                logger.warning('Failed to find exercise "%s" for prereq. while adding "%s"' % (prerequisite, data['name']))
+        current_prereqs = frozenset(x[0] for x in obj.prerequisites.all().values_list('khan_id'))
+        needed_prereqs = frozenset(prerequisites)
+        no_longer_prereqs = current_prereqs - needed_prereqs
+        missing_prereqs = needed_prereqs - current_prereqs
 
-        obj.covers.all().delete()
-        for cover in covers:
+        for prereq in obj.prerequisites.filter(khan_id__in=no_longer_prereqs):
+            obj.prerequisites.remove(prereq)
+
+        for prereq in missing_prereqs:
+            try:
+                obj.prerequisites.add(Exercise.objects.get(khan_id=prereq))
+            except Exercise.DoesNotExist:
+                logger.warning('Failed to find exercise "%s" for prereq. while adding "%s"' % (prereq, obj.name))
+
+        current_covers = frozenset(x[0] for x in obj.covers.all().values_list('khan_id'))
+        needed_covers = frozenset(covers)
+        no_longer_covers = current_covers - needed_covers
+        missing_covers = needed_covers - current_covers
+
+        for cover in obj.covers.filter(khan_id__in=no_longer_covers):
+            obj.covers.remove(cover)
+
+        for cover in missing_covers:
             try:
                 obj.covers.add(Exercise.objects.get(khan_id=cover))
             except Exercise.DoesNotExist:
-                logger.warning('Failed to find exercise "%s" for cover while adding "%s"' % (prerequisite, data['name']))
+                logger.warning('Failed to find exercise "%s" for cover while adding "%s"' % (cover, obj.name))
 
         return obj
