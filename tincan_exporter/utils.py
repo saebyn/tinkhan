@@ -3,3 +3,19 @@
 Utilities for Tin Can Statement generation.
 """
 
+
+class StatementSource(object):
+    """
+    A source of statements for the TCAPI.
+    """
+    def get(self):
+        """
+        return list of dicts representing statements
+        """
+        raise NotImplementedError
+
+    def commit(self):
+        """
+        mark source of statements as being synchronized
+        """
+        raise NotImplementedError

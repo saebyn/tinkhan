@@ -51,15 +51,15 @@ def update_badge_categories():
 def fetch_user(oauth_hook):
     logger.info('Fetch all user-specific data')
     
-    fetch_workflow = (fetch_userdata.s(oauth_hook) | celery.group(
+    fetch_workflow = (fetch_userdata.s(oauth_hook) | celery.group([
         fetch_user_exercises.s(oauth_hook),
         fetch_user_videos.s(oauth_hook),
         fetch_user_badges.s(oauth_hook),
-    ))
-
-    fetch_workflow.delay()
+    ]))()
 
     logger.info('Finished fetching all user-specific data')
+
+    return fetch_workflow.parent.get()  # return the userdata instance
 
 
 @celery.task(rate_limit='6/h')
