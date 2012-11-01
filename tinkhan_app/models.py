@@ -26,6 +26,7 @@ class Person(models.Model):
     userdata = models.ForeignKey(UserData, null=True, blank=True)
     email = models.EmailField()
     name = models.CharField(max_length=255)
+    openid = models.URLField(blank=True)
 
     use_tc_account = models.BooleanField(default=False)
     tc_account_homePage = models.CharField(max_length=255, blank=True)

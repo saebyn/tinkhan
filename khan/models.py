@@ -30,9 +30,9 @@ class UserActivityModelMixin(models.Model):
         self.synchronized = False
         return super(UserActivityModelMixin, self).save(*args, **kwargs)
 
-    def syncronize(self):
+    def synchronize(self):
         self.synchronized = True
-        return super(UserActivityModelMixin, self).save()
+        return models.Model.save(self)
 
 
 class Topic(BaseModel):
@@ -140,8 +140,8 @@ class BadgeEarn(UserActivityModelMixin, BaseModel):
     date_earned = models.DateTimeField()
     points_earned = models.PositiveIntegerField()
 
-    target_context_content_type = models.ForeignKey(ContentType)
-    target_context_object_id = models.IntegerField()
+    target_context_content_type = models.ForeignKey(ContentType, null=True, blank=True)
+    target_context_object_id = models.IntegerField(null=True, blank=True)
     target_context = generic.GenericForeignKey(
             'target_context_content_type', 'target_context_object_id')
 

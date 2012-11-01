@@ -5,6 +5,8 @@ Celery tasks for the `khan` Django app.
 import requests
 import requests.exceptions
 
+from django.db import transaction
+
 import celery
 from celery.utils.log import get_task_logger
 
@@ -14,6 +16,7 @@ logger = get_task_logger(__name__)
 
 
 @celery.task(ignore_result=True, rate_limit='1/h')
+@transaction.commit_on_success
 def update_topic_tree():
     logger.info('Updating topic tree')
     try:
@@ -31,10 +34,13 @@ def update_topic_tree():
 
 
 @celery.task(ignore_result=True, rate_limit='1/h')
+@transaction.commit_on_success
 def update_badge_categories():
     logger.info('Updating badge categories')
     try:
         response = requests.get('http://www.khanacademy.org/api/v1/badges/categories')
+
+        response.raise_for_status()
     except requests.exceptions.RequestException, exc:
         raise update_badge_categories.retry(exc=exc)
     
@@ -55,14 +61,19 @@ def fetch_user(oauth_hook):
         fetch_user_exercises.s(oauth_hook),
         fetch_user_videos.s(oauth_hook),
         fetch_user_badges.s(oauth_hook),
-    ]))()
+    ])).apply_async()
 
     logger.info('Finished fetching all user-specific data')
 
-    return fetch_workflow.parent.get()  # return the userdata instance
+    userdata = fetch_workflow.parent.get()
+
+    fetch_workflow.collect()
+
+    return userdata
 
 
 @celery.task(rate_limit='6/h')
+@transaction.commit_on_success
 def fetch_userdata(oauth_hook):
     logger.info('Fetching userdata')
 
@@ -70,8 +81,7 @@ def fetch_userdata(oauth_hook):
         response = requests.get('http://www.khanacademy.org/api/v1/user',
                 hooks=dict(pre_request=oauth_hook))
 
-        if response.status_code == 401:
-            return None
+        response.raise_for_status()
     except requests.exceptions.RequestException, exc:
         raise fetch_userdata.retry(exc=exc)
 
@@ -87,6 +97,7 @@ def fetch_userdata(oauth_hook):
 
 
 @celery.task(rate_limit='6/h')
+@transaction.commit_on_success
 def fetch_user_exercises(userdata, oauth_hook):
     logger.info('Fetching user exercise data')
 
@@ -94,8 +105,7 @@ def fetch_user_exercises(userdata, oauth_hook):
         response = requests.get('http://www.khanacademy.org/api/v1/user/exercises',
                 hooks=dict(pre_request=oauth_hook))
 
-        if response.status_code == 401:
-            return False
+        response.raise_for_status()
     except requests.exceptions.RequestException, exc:
         raise fetch_user_exercises.retry(exc=exc)
 
@@ -111,6 +121,7 @@ def fetch_user_exercises(userdata, oauth_hook):
 
 
 @celery.task(rate_limit='6/h')
+@transaction.commit_on_success
 def fetch_user_videos(userdata, oauth_hook):
     logger.info('Fetching user video data')
 
@@ -118,8 +129,7 @@ def fetch_user_videos(userdata, oauth_hook):
         response = requests.get('http://www.khanacademy.org/api/v1/user/videos',
                 hooks=dict(pre_request=oauth_hook))
 
-        if response.status_code == 401:
-            return False
+        response.raise_for_status()
     except requests.exceptions.RequestException, exc:
         raise fetch_user_videos.retry(exc=exc)
 
@@ -135,6 +145,7 @@ def fetch_user_videos(userdata, oauth_hook):
 
 
 @celery.task(rate_limit='6/h')
+@transaction.commit_on_success
 def fetch_user_badges(userdata, oauth_hook):
     logger.info('Fetching user badge data')
 
@@ -142,8 +153,7 @@ def fetch_user_badges(userdata, oauth_hook):
         response = requests.get('http://www.khanacademy.org/api/v1/badges',
                 hooks=dict(pre_request=oauth_hook))
 
-        if response.status_code == 401:
-            return False
+        response.raise_for_status()
     except requests.exceptions.RequestException, exc:
         raise fetch_user_badges.retry(exc=exc)
 

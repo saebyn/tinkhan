@@ -5,6 +5,7 @@ Model managers for the `khan` Django app.
 import logging
 
 from django.db import models
+from django.utils import timezone
 
 
 logger = logging.getLogger(__name__)
@@ -139,16 +140,19 @@ class BadgeManager(models.Manager):
                     badge_earn = BadgeEarn(
                         user=user,
                         badge=badge,
-                        date_earned=user_badge['date'],
-                        points_earned=user_badge['points_earned'],
-                        target_context_name=user_badge['target_context_name']
+                        date_earned=(user_badge.get('date', None) or timezone.now()),
+                        points_earned=(user_badge.get('points_earned', 0) or 0),
+                        target_context_name=(user_badge.get('target_context_name', '') or '')
                     )
 
-                    if user_badge['target_context']['kind'] == 'Exercise':
-                        try:
-                            badge_earn.target_context = Exercise.objects.get(khan_id=user_badge['target_context']['name'])
-                        except Exercise.DoesNotExist:
-                            logger.warning('Failed to find exercise for badge "%(badge_name)s" for user "%(user)s"' % user_badge)
+                    try:
+                        if user_badge['target_context']['kind'] == 'Exercise':
+                            try:
+                                badge_earn.target_context = Exercise.objects.get(khan_id=user_badge['target_context']['name'])
+                            except Exercise.DoesNotExist:
+                                logger.warning('Failed to find exercise for badge "%(badge_name)s" for user "%(user)s"' % user_badge)
+                    except (KeyError, TypeError):
+                        pass
 
                     new_badges.append(badge_earn)
 

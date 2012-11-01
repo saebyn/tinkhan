@@ -28,6 +28,12 @@ def export_statements(statement_sources, tcapi_endpoint):
     for source in statement_sources:
         statements.extend(source.get())
 
+    statement_count = len(statements)
+
+    if statement_count == 0:
+        logger.info('No statements to export via Tin Can. Quitting.')
+        return
+
     request_options = {
         'headers': {
             'content-type': 'application/json',
@@ -43,11 +49,14 @@ def export_statements(statement_sources, tcapi_endpoint):
     request_options['data'] = json.dumps(statements)
 
     try:
-        requests.post(tcapi_endpoint.url, **request_options)
+        response = requests.post(tcapi_endpoint.url, **request_options)
     except requests.exceptions.RequestException, exc:
         raise export_statements.retry(exc=exc)
+
+    if response.status_code != 200:
+        logger.error('Problem with TC API request: %s, original text: %s' % (response.text, request_options['data']))
 
     for source in statement_sources:
         source.commit()
 
-    logger.info('Finished exporting Tin Can statements')
+    logger.info('Finished exporting %d Tin Can statements' % statement_count)

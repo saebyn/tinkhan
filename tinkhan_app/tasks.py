@@ -44,6 +44,19 @@ def send_email_request_for_userdata_update_for_account(account_profile):
 
 
 @celery.task(ignore_result=True)
+def update_person_userdata(userdata, person):
+    person.userdata = userdata
+    person.save()
+    return userdata
+
+
+@celery.task(ignore_result=True)
+def export_persons_statements(userdata, person):
+    if person.account.tcapi_endpoint is not None:
+        export_statements([UserDataStatementSource(userdata, person)], person.account.tcapi_endpoint)
+
+
+@celery.task(ignore_result=True)
 def update_person(oauth_hook, person):
     # given that we have an oauth token (via oauth_hook)
     # - use khan.tasks.fetch_user
@@ -51,9 +64,4 @@ def update_person(oauth_hook, person):
     #   if associated with it
     # - wrap the userdata instance in our implementation of StatementSource
     #   and send that to the tincan_exporter.tasks.export_statements task
-    userdata = fetch_user(oauth_hook)
-
-    person.userdata = userdata
-    person.save()
-
-    export_statements([UserDataStatementSource(userdata)], person.account.tcapi_endpoint)
+    (fetch_user.s(oauth_hook) | update_person_userdata.s(person) | export_persons_statements.s(person)).apply_async()
