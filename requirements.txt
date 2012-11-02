@@ -26,3 +26,4 @@ django-celery-with-redis==3.0
 redis==2.7.1
 django-redis-cache==0.9.5
 -e git+https://github.com/adamcupial/django-html5-forms.git#egg=html5forms
+seacucumber==1.5

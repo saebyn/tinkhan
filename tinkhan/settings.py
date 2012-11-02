@@ -128,6 +128,7 @@ INSTALLED_APPS = (
     'djcelery',
     'storages',
     'south',
+    'seacucumber',
 
     'errortemplates',
     'tos',
@@ -234,16 +235,12 @@ AWS_HEADERS = {
 
 STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
+EMAIL_BACKEND = 'seacucumber.backend.SESBackend'
+
 TINKHAN_OAUTH_CONSUMER_KEY = ''
 TINKHAN_OAUTH_CONSUMER_SECRET = ''
 
-FROM_EMAIL = 'John Weaver <john@saebyn.info>'
-
-EMAIL_HOST = 'smtp.sendgrid.net'
-EMAIL_HOST_USER = 'saebyn'
-EMAIL_HOST_PASSWORD = ''
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+FROM_EMAIL = 'Tin Khan Robot <tinkhan@saebyn.info>'
 
 try:
     from settings_local import *
