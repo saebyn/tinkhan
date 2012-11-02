@@ -26,7 +26,7 @@ class Person(models.Model):
     userdata = models.ForeignKey(UserData, null=True, blank=True)
     email = models.EmailField()
     name = models.CharField(max_length=255)
-    openid = models.URLField(blank=True)
+    openid = models.URLField(blank=True, default='')
 
     use_tc_account = models.BooleanField(default=False)
     tc_account_homePage = models.CharField(max_length=255, blank=True)
@@ -39,7 +39,8 @@ class Person(models.Model):
 def create_profile(sender, **kw):
     user = kw["instance"]
     if kw["created"]:
-        profile = UserProfile(user=user)
+        endpoint = TinCanEndpoint.objects.create(user=user)
+        profile = UserProfile(user=user, tcapi_endpoint=endpoint)
         profile.save()
 
 

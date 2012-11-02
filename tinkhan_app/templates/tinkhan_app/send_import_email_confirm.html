@@ -1,0 +1,18 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n bootstrap %}
+{% load url from future %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{% trans "Send Khan Academy Import Request Emails" %}</small></h1>
+</div>
+
+<form method="post" action="." class="form-horizontal">
+  {% csrf_token %}
+  <div class="form-actions">
+    <input type="submit" class="btn btn-primary" value="{% blocktrans count counter=account.person_set.count %}Send 1 import request email{% plural %}Send {{ count }} import request emails{% endblocktrans %}">
+    <a href="{% url "profiles_profile_detail" user.username %}" class="btn">{% trans 'Return to Your Profile' %}</a>
+  </div>
+</form>
+{% endblock %}

@@ -10,6 +10,6 @@ learning records from Khan Academy. Go to the following URL to get started:
 
 http://{{ site.domain }}{% url "authorize_khan_import" person.pk %}
 
-{% blocktrans name=site.name%}
+{% blocktrans with name=site.name%}
 -- The {{ name }} robot
 {% endblocktrans %}

@@ -134,6 +134,7 @@ INSTALLED_APPS = (
     'registration',
     'profiles',
     'bootstrapform',
+    'html5forms',
 
     # our apps
     'khan',
@@ -231,6 +232,8 @@ STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
 
 TINKHAN_OAUTH_CONSUMER_KEY = ''
 TINKHAN_OAUTH_CONSUMER_SECRET = ''
+
+FROM_EMAIL = 'John Weaver <john@saebyn.info>'
 
 try:
     from settings_local import *

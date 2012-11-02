@@ -34,7 +34,7 @@ def send_email_request_for_userdata_update_for_account(account_profile):
                            'site': site})
         email_contents = email_template.render(context)
         subject = _('Update %s with your latest work from Khan Academy via %s')
-        emails.append((subject % (account_profile.company, site.display_name,),
+        emails.append((subject % (account_profile.company, site.name,),
                        email_contents,
                        settings.FROM_EMAIL,
                        [person.email]))

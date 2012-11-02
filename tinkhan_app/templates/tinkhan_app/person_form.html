@@ -1,0 +1,25 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n bootstrap %}
+{% load url from future %}
+
+{% block content %}
+<div class="page-header">
+  {% if object %}
+    <h1>{{ object.name }} <small>{% trans "Edit User" %}</small></h1>
+  {% else %}
+    <h1>{% trans "Create New User" %}</h1>
+  {% endif %}
+</div>
+
+<form method="post" action="." class="form-horizontal">
+  {% csrf_token %}
+  <fieldset>
+  {{ form|bootstrap }}
+  </fieldset>
+  <div class="form-actions">
+    <input type="submit" class="btn btn-primary" value="{% if object %}{% trans "Save Changes to User" %}{% else %}{% trans "Create New User" %}{% endif %}">
+    <a href="{% url "profiles_profile_detail" user.username %}" class="btn btn-danger">Discard Changes</a>
+  </div>
+</form>
+{% endblock %}

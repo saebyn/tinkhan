@@ -1,0 +1,18 @@
+{# vim: set fileencoding=utf-8 ff=unix nowrap tabstop=2 shiftwidth=2 softtabstop=2 smarttab shiftround expandtab : #}
+{% extends "base.html" %}
+{% load i18n bootstrap %}
+{% load url from future %}
+
+{% block content %}
+<div class="page-header">
+  <h1>{{ object.name }} <small>{% trans "Permanently Delete" %}</small></h1>
+</div>
+
+<form method="post" action="." class="form-horizontal">
+  {% csrf_token %}
+  <div class="form-actions">
+    <input type="submit" class="btn btn-danger" value="{% trans "Permanently Delete User" %}">
+    <a href="{% url "profiles_profile_detail" user.username %}" class="btn btn-primary">{% trans 'Cancel Deletion' %}</a>
+  </div>
+</form>
+{% endblock %}

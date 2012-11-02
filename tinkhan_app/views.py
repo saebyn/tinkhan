@@ -3,8 +3,16 @@
 Views for the tinkhan app.
 """
 from django.core.urlresolvers import reverse
+from django.core.exceptions import ImproperlyConfigured
+from django.http import HttpResponseRedirect
+
 from django.views.generic import TemplateView, RedirectView
-from django.views.generic.detail import DetailView, SingleObjectMixin
+from django.views.generic.edit import DeleteView, CreateView, UpdateView
+from django.views.generic.detail import DetailView, SingleObjectMixin,\
+        SingleObjectTemplateResponseMixin, BaseDetailView
+
+from django.utils.decorators import method_decorator
+from django.contrib.auth.decorators import login_required
 
 from oauth_hook import OAuthHook
 from urlparse import parse_qs
@@ -13,7 +21,15 @@ from requests.exceptions import RequestException
 
 from tinkhan_app.models import Person
 from tinkhan_app.settings import OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET
-from tinkhan_app.tasks import update_person
+from tinkhan_app.tasks import update_person,\
+        send_email_request_for_userdata_update_for_account
+from tinkhan_app.forms import PersonForm
+
+
+class LoginRequiredMixin(object):
+    @method_decorator(login_required)
+    def dispatch(self, *args, **kwargs):
+        return super(LoginRequiredMixin, self).dispatch(*args, **kwargs)
 
 
 class HomeView(TemplateView):
@@ -127,7 +143,75 @@ class KhanImportAuthProblemView(DetailView):
 khan_import_auth_problem = KhanImportAuthProblemView.as_view()
 
 
-# interface for account holder to:
-#  - configure their tcapi endpoints
-#  - manage their people
-#  - send the emails
+class PersonMixin(LoginRequiredMixin):
+    form_class = PersonForm
+    model = Person
+
+    def get_success_url(self):
+        return reverse('profiles_profile_detail', args=(self.request.user.username,))
+
+    def get_form_kwargs(self):
+        kwargs = super(PersonMixin, self).get_form_kwargs()
+        kwargs.update(dict(user=self.request.user))
+        return kwargs
+
+    def get_queryset(self):
+        qs = super(PersonMixin, self).get_queryset()
+        return qs.filter(account=self.request.user.get_profile())
+
+
+class PersonEditView(PersonMixin, UpdateView):
+    pass
+
+
+person_edit = PersonEditView.as_view()
+
+
+class PersonDeleteView(PersonMixin, DeleteView):
+    pass
+
+
+person_delete = PersonDeleteView.as_view()
+
+
+class PersonCreateView(PersonMixin, CreateView):
+    pass
+
+
+person_create = PersonCreateView.as_view()
+
+
+class ConfirmationMixin(object):
+    success_url = None
+
+    def confirmed(self):
+        raise NotImplementedError
+
+    def post(self, *args, **kwargs):
+        self.confirmed()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_success_url(self):
+        if self.success_url:
+            return self.success_url
+        else:
+            raise ImproperlyConfigured(
+                "No URL to redirect to. Provide a success_url.")
+
+
+class SendImportEmailView(ConfirmationMixin, TemplateView):
+    template_name = 'tinkhan_app/send_import_email_confirm.html'
+
+    def get_context_data(self, **kwargs):
+        context = super(SendImportEmailView, self).get_context_data(**kwargs)
+        context.update(dict(account=self.request.user.get_profile()))
+        return context
+
+    def get_success_url(self):
+        return reverse('profiles_profile_detail', args=(self.request.user.username,))
+
+    def confirmed(self):
+        send_email_request_for_userdata_update_for_account.apply_async([self.request.user.get_profile()])
+
+
+send_import_email = SendImportEmailView.as_view()
