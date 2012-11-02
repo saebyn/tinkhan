@@ -241,6 +241,7 @@ TINKHAN_OAUTH_CONSUMER_KEY = ''
 TINKHAN_OAUTH_CONSUMER_SECRET = ''
 
 FROM_EMAIL = 'Tin Khan Robot <tinkhan@saebyn.info>'
+SERVER_EMAIL = FROM_EMAIL
 
 try:
     from settings_local import *
