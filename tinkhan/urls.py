@@ -10,8 +10,7 @@ js_info_dict = {
 }
 
 urlpatterns = patterns('',
-    # Examples:
-    # url(r'^$', 'tinkhan.views.home', name='home'),
+    url(r'^accounts/profile/$', 'profiles.views.edit_orofile'),
 
     # generic and contrib views
     url(r'^accounts/logout/$',

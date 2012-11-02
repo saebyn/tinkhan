@@ -174,7 +174,6 @@ LOGGING = {
 
 AUTH_PROFILE_MODULE = 'tinkhan_app.UserProfile'
 ACCOUNT_ACTIVATION_DAYS = 3
-#LOGIN_REDIRECT_URL = '/'
 
 REDIS_URL = os.getenv('REDISTOGO_URL', 'redis://localhost:6379/1')
 REDIS_CONFIG = urlparse.urlparse(REDIS_URL)
