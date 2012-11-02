@@ -239,6 +239,12 @@ TINKHAN_OAUTH_CONSUMER_SECRET = ''
 
 FROM_EMAIL = 'John Weaver <john@saebyn.info>'
 
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_HOST_USER = 'saebyn'
+EMAIL_HOST_PASSWORD = ''
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+
 try:
     from settings_local import *
 except ImportError:
