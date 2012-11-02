@@ -177,6 +177,10 @@ ACCOUNT_ACTIVATION_DAYS = 3
 
 REDIS_URL = os.getenv('REDISTOGO_URL', 'redis://localhost:6379/1')
 REDIS_CONFIG = urlparse.urlparse(REDIS_URL)
+try:
+    REDIS_DB = int(REDIS_CONFIG.path[1:])
+except ValueError:
+    REDIS_DB = 0
 
 # celery settings
 BROKER_URL = REDIS_URL
@@ -209,7 +213,7 @@ CACHES = {
         'BACKEND': 'redis_cache.RedisCache',
         'LOCATION': '%s:%s' % (REDIS_CONFIG.hostname, REDIS_CONFIG.port),
         'OPTIONS': {
-            'DB': int(REDIS_CONFIG.path[1:]),
+            'DB': REDIS_DB,
             'PASSWORD': REDIS_CONFIG.password,
             'PARSER_CLASS': 'redis.connection.HiredisParser'
         }
