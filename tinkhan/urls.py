@@ -10,7 +10,7 @@ js_info_dict = {
 }
 
 urlpatterns = patterns('',
-    url(r'^accounts/profile/$', 'profiles.views.edit_orofile'),
+    url(r'^accounts/profile/$', 'profiles.views.edit_profile'),
 
     # generic and contrib views
     url(r'^accounts/logout/$',
