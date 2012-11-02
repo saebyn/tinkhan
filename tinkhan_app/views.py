@@ -8,8 +8,7 @@ from django.http import HttpResponseRedirect
 
 from django.views.generic import TemplateView, RedirectView
 from django.views.generic.edit import DeleteView, CreateView, UpdateView
-from django.views.generic.detail import DetailView, SingleObjectMixin,\
-        SingleObjectTemplateResponseMixin, BaseDetailView
+from django.views.generic.detail import DetailView, SingleObjectMixin
 
 from django.utils.decorators import method_decorator
 from django.contrib.auth.decorators import login_required
@@ -19,11 +18,13 @@ from urlparse import parse_qs
 import requests
 from requests.exceptions import RequestException
 
+from tincan_exporter.models import TinCanEndpoint
+
 from tinkhan_app.models import Person
 from tinkhan_app.settings import OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET
 from tinkhan_app.tasks import update_person,\
         send_email_request_for_userdata_update_for_account
-from tinkhan_app.forms import PersonForm
+from tinkhan_app.forms import PersonForm, TinCanEndpointForm
 
 
 class LoginRequiredMixin(object):
@@ -215,3 +216,18 @@ class SendImportEmailView(ConfirmationMixin, TemplateView):
 
 
 send_import_email = SendImportEmailView.as_view()
+
+
+class ConfigureTCAPIEndpointView(UpdateView):
+    model = TinCanEndpoint
+    form_class = TinCanEndpointForm
+
+    def get_success_url(self):
+        return reverse('profiles_profile_detail', args=(self.request.user.username,))
+
+    def get_queryset(self):
+        qs = super(ConfigureTCAPIEndpointView, self).get_queryset()
+        return qs.filter(user=self.request.user)
+
+
+configure_tcapi_endpoint = ConfigureTCAPIEndpointView.as_view()   

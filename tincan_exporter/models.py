@@ -6,6 +6,8 @@ Models for Tin Can APIs.
 from django.db import models
 from django.contrib.auth.models import User
 
+from django.utils.translation import ugettext_lazy as _
+
 import urlparse
 
 
@@ -19,7 +21,7 @@ class TinCanEndpoint(models.Model):
     username = models.CharField(max_length=255, blank=True, default='')
     password = models.CharField(max_length=255, blank=True, default='')
     hostname = models.CharField(max_length=255)
-    ssl = models.BooleanField(default=True)
+    ssl = models.BooleanField(default=True, verbose_name=_(u'SSL (https)'))
     path = models.CharField(max_length=255, default='/TCAPI/statements')
     user = models.ForeignKey(User, related_name='tincan_endpoints')
 

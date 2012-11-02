@@ -9,6 +9,7 @@ from django.utils.translation import ugettext_lazy as _
 from html5forms.fields import Html5EmailField, Html5URLField, Html5CharField,\
         Html5BooleanField
 
+from tincan_exporter.models import TinCanEndpoint
 from tinkhan_app.models import Person
 
 
@@ -49,4 +50,7 @@ accountName.'''))
         self.instance.account = user.get_profile()
 
 
-# need modelform for endpoint?
+class TinCanEndpointForm(forms.ModelForm):
+    class Meta:
+        model = TinCanEndpoint
+        exclude = ('user',)

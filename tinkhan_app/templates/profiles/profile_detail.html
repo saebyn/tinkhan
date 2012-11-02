@@ -8,37 +8,65 @@
   <h1>{{ profile.company }} <small>{{ profile.user.get_full_name }}</small></h1>
 </div>
 
-<table class="table table-striped table-hover">
-  <thead>
-    <tr>
-      <th>{% trans 'Name' %}</th>
-      <th>{% trans 'Email' %}</th>
-      <th></th>
-    </tr>
-  </thead>
-  <tfoot>
-    <tr><td colspan="3"></td></tr>
-  </tfoot>
-  <tbody>
-    {% for person in profile.person_set.all %}
-    <tr>
-      <td>{{ person.name }}</td>
-      <td>{{ person.email }}</td>
-      <td>
-        <a class="btn" href="{% url "person_edit" person.pk %}">{% trans 'Edit' %}</a>
-        <a class="btn btn-danger" href="{% url "person_delete" person.pk %}">{% trans 'Delete' %}</a>
-      </td>
-    </tr>
-{% endfor %}
-  </tbody>
-</table>
+<div class="row clearfix">
+  <table class="table table-striped table-hover span8">
+    <caption>Users</caption>
+    <thead>
+      <tr>
+        <th>{% trans 'Name' %}</th>
+        <th>{% trans 'Email' %}</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tfoot>
+      <tr><td colspan="3"></td></tr>
+    </tfoot>
+    <tbody>
+      {% for person in profile.person_set.all %}
+      <tr>
+        <td>{{ person.name }}</td>
+        <td>{{ person.email }}</td>
+        <td>
+          <a class="btn" href="{% url "person_edit" person.pk %}">{% trans 'Edit' %}</a>
+          <a class="btn btn-danger" href="{% url "person_delete" person.pk %}">{% trans 'Delete' %}</a>
+        </td>
+      </tr>
+  {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="table table-condensed table-hover span4">
+    <caption>{% trans 'Tin Can API Endpoint Settings' %} <a href="{% url "configure_tcapi_endpoint" profile.tcapi_endpoint.pk %}" class="btn">{% trans 'Configure' %}</a></caption>
+    <thead><tr><td colspan="2"></td></tr></thead>
+    <tfoot><tr><td colspan="2"></td></tr></tfoot>
+    <tbody>
+      <tr>
+        <th scope="row">{% trans 'Authentication Method' %}</th>
+        <td>{{ profile.tcapi_endpoint.get_auth_type_display }}</td>
+      </tr>
+      <tr>
+        <th scope="row">{% trans 'Username' %}</th>
+        <td>{{ profile.tcapi_endpoint.username }}</td>
+      </tr>
+      <tr>
+        <th scope="row">{% trans 'Server' %}</th>
+        <td>{{ profile.tcapi_endpoint.hostname }}</td>
+      </tr>
+      <tr>
+        <th scope="row">{% trans 'SSL (https)' %}</th>
+        <td>{% if profile.tcapi_endpoint.ssl %}{% trans 'Yes' %}{% else %}{% trans 'No' %}{% endif %}</td>
+      </tr>
+      <tr>
+        <th scope="row">{% trans 'Path' %}</th>
+        <td>{{ profile.tcapi_endpoint.path }}</td>
+      </tr>
+    </tbody>
+  </table>
+  
+</div>
 
 <div class="form-actions">
   <a class="btn btn-primary" href="{% url "person_create" %}">{% trans 'Add User' %}</a>
-  <a class="btn pull-right" href="{% url "send_import_email" %}">{% trans 'Email Khan Academy Import Request to Everyone' %}</a>
+  <a class="btn pull-right" href="{% url "send_import_email" %}">{% trans 'Email Khan Academy Import Requests to Everyone' %}</a>
 </div>
-
-# Profile details
-#  - view tcapi endpoint
-#    - link to edit
 {% endblock %}

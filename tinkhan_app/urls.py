@@ -32,8 +32,8 @@ urlpatterns = patterns('tinkhan_app.views',
     url(r'^send/$',
         'send_import_email',
         name='send_import_email'),
-)
 
-# edit our endpoint
-#  - edit
-#  - view is part of profile page (link to edit from there)
+    url(r'^configure/(?P<pk>\d+)/$',
+        'configure_tcapi_endpoint',
+        name='configure_tcapi_endpoint'),
+)
