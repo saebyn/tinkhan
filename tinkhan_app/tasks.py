@@ -53,6 +53,9 @@ def update_person_userdata(userdata, person):
 @celery.task(ignore_result=True)
 def export_persons_statements(userdata, person):
     if person.account.tcapi_endpoint is not None:
+        # setting this here because person may be stale and not been
+        # updated from other task that sets it
+        person.userdata = userdata
         export_statements([UserDataStatementSource(userdata, person)], person.account.tcapi_endpoint)
 
 
