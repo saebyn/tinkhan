@@ -120,7 +120,12 @@ class BadgeManager(models.Manager):
             except self.model.DoesNotExist:
                 badge = self.model(khan_id=badge_data['name'])
 
-            badge.category = BadgeCategory.objects.get(khan_id=badge_data['badge_category'])
+            try:
+                badge.category = BadgeCategory.objects.get(khan_id=badge_data['badge_category'])
+            except BadgeCategory.DoesNotExist:
+                logger.warning('Failed to find category "%(badge_category)s" for badge "%(name)s"' % badge_data)
+                continue
+
             badge.name = badge_data['description']
             badge.description = badge_data['safe_extended_description']
             badge.points = badge_data['points']
