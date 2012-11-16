@@ -1,0 +1,136 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+import os
+import sys
+
+DOCUMENTATION = '''
+---
+module: django_user
+short_description: Manage Django user accounts
+description:
+   - Create, update, or delete a Django user account.
+options:
+   project_path:
+     required: false
+     description: Add this path to the set of paths that Python searches for modules.
+   settings:
+     required: false
+     default: project.settings
+     description: The value that the DJANGO_SETTINGS_MODULE environmental
+                  variable should be set to.
+   username:
+     required: true
+     description: The username of the user.
+   first_name:
+     required: false
+   last_name:
+     required: false
+   email:
+     required: false
+   password:
+     required: false
+   is_staff:
+     default: "no"
+     choices: [ yes, no ]
+     required: false
+   is_superuser:
+     default: "no"
+     choices: [ yes, no ]
+     required: false
+   is_active:
+     default: "yes"
+     choices: [ yes, no ]
+     required: false
+   state:
+     required: false
+     default: "present"
+     choices: [present, absent]
+     description:
+       - Whether the account should exist.  When I(absent), removes
+         the user account.
+examples:
+   - code: 'django_user: project_path=/location/of/site settings=project.settings username=admin password=test is_superuser=yes is_staff=yes'
+     description: Add the admin user 'admin' with the password 'test'.
+author: John Weaver
+'''
+
+def main():
+    module = AnsibleModule(
+        argument_spec = dict(
+            project_path=dict(),
+            settings=dict(default='project.settings'),
+            username=dict(required=True),
+            first_name=dict(),
+            last_name=dict(),
+            email=dict(),
+            password=dict(),
+            is_staff=dict(default='no', choices=BOOLEANS),
+            is_superuser=dict(default='no', choices=BOOLEANS),
+            is_active=dict(default='yes', choices=BOOLEANS),
+            state=dict(default='present', choices=['present', 'absent'])
+        )
+    )
+
+    params = module.params
+
+    if params.get('project_path'):
+        sys.path.append(params['project_path'])
+
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', params['settings'])
+
+    from django.contrib.auth.models import User
+
+    username = params['username']
+    state = params['state']
+    is_staff = module.boolean(params['is_staff'])
+    is_superuser = module.boolean(params['is_superuser'])
+    is_active = module.boolean(params['is_active'])
+
+    first_name = params.get('first_name', None)
+    last_name = params.get('last_name', None)
+    email = params.get('email', None)
+    password = params.get('password', None)
+
+
+    if state == 'present':
+        # 1. user doesn't exist, but state is present -> create user
+        # 2. user does exist, and state is present -> update user
+        try:
+            user = User.objects.get(username=username)
+        except User.DoesNotExist:
+            user = User(username=username)
+
+        user.is_staff = is_staff
+        user.is_superuser = is_superuser
+        user.is_active = is_active
+
+        if first_name:
+            user.first_name = first_name
+
+        if last_name:
+            user.last_name = last_name
+
+        if email:
+            user.email = user
+
+        if password:
+            # set password
+            user.set_password(password)
+        else:
+            # make account inaccessible
+            user.set_unusable_password()
+
+        user.save()
+    elif state == 'absent':
+        # 4. user does exist, but state is absent -> delete user
+        try:
+            User.objects.get(username=username).delete()
+        except User.DoesNotExist:
+            # 3. user doesn't exist, and state is absent -> do nothing
+            pass
+
+    module.exit_json(state=state)
+
+# this is magic, see lib/ansible/module_common.py
+#<<INCLUDE_ANSIBLE_MODULE_COMMON>>
+main()

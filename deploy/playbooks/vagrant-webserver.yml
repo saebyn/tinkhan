@@ -1,0 +1,132 @@
+---
+- hosts: vagrant-web-servers
+  user: vagrant
+  sudo: True
+
+  vars:
+  - nginx_user: www-data
+  - nginx_group: www-data
+  - nginx_maintenance_path: /var/www/$project_name-maintenance
+  - nginx_upgrading_file: /var/www/$project_name.upgrading
+
+  tasks:
+    - name: ensure /var/www exists
+      command: mkdir -p /var/www
+
+    - name: ensure correct file permissions on /var/www
+      file: path=/var/www owner=$nginx_user group=$nginx_group mode=0750 state=directory
+
+    - name: put site into maintenance mode
+      command: touch $nginx_upgrading_file
+
+    - name: write nginx.conf
+      template: src=../templates/nginx.j2 dest=/etc/nginx/nginx.conf
+      notify:
+        - restart nginx
+
+    - name: nginx
+      service: name=nginx enabled=yes
+
+    - name: redis
+      service: name=redis-server enabled=yes state=started
+
+    - name: stop $project_name service
+      service: name=$project_name state=stopped
+      ignore_errors: True
+
+  handlers:
+    - name: restart nginx
+      service: name=nginx state=restarted
+
+
+- hosts: 127.0.0.1
+  connection: local
+
+  vars:
+  - git_branch: master
+
+  tasks:
+    - name: package project source
+      command: git archive --format=tar.gz -o latest.tar.gz $git_branch chdir=$source_path
+
+
+- hosts: vagrant-web-servers
+  user: vagrant
+  sudo: True
+
+  vars:
+  - nginx_upgrading_file: /var/www/$project_name.upgrading
+  - django_site_id: 1
+  - newrelic_license_key: ""
+
+  tasks:
+    - name: copy project source
+      copy: src=$source_path/latest.tar.gz dest=/var/www
+
+    - name: remove old source directory
+      command: rm -rf /var/www/$server_name
+
+    - name: create new source directory
+      command: mkdir /var/www/$server_name
+
+    - name: ensure source directory permissions
+      file: path=/var/www/$server_name owner=$nginx_user group=$nginx_group mode=0770 state=directory
+
+    - name: unpackage project source
+      command: tar zxf ../latest.tar.gz chdir=/var/www/$server_name
+
+    - name: install project dependencies
+      # sadly, the pip module uses the --use-mirrors option, which is broken
+      # for the version of pip installed
+      command: pip install -U -r /var/www/$server_name/requirements.txt
+
+    - name: write settings_local.py
+      template: src=../templates/settings.py.j2 dest=/var/www/$server_name/$project_name/settings_local.py
+      notify:
+        - restart project
+
+    - name: perform django syncdb
+      command: python manage.py syncdb chdir=/var/www/$server_name --noinput
+
+    - name: perform django migrate
+      command: python manage.py migrate chdir=/var/www/$server_name --noinput
+
+    - name: create user for project
+      user: name=$project_name group=$nginx_group state=present
+
+    - name: install upstart config for project
+      command: foreman export upstart /etc/init -p $backend_port -c web=1,scheduler=1,worker=3,celerycam=1 -u $project_name -a $project_name chdir=/var/www/$server_name
+      notify:
+        - restart project
+
+    - name: install newrelic config
+      template: src=../templates/newrelic.ini.j2 dest=/var/www/$server_name/newrelic.ini
+
+    - name: create init.d symlink for upstart
+      file: src=/lib/init/upstart-job path=/etc/init.d/$project_name state=link
+
+    - name: configure $project_name service
+      service: name=$project_name state=started enabled=yes
+
+    - name: take site out of maintenance mode
+      file: path=$nginx_upgrading_file state=absent
+
+    - name: ensure django admin user exists
+      action: django_user project_path=/var/www/$server_name settings=tinkhan.settings username=admin is_staff=yes is_superuser=yes email=john@saebyn.info password= state=present
+
+  handlers:
+    # Restart gunicorn, celery workers, etc via foreman's upstart config
+    - name: restart project
+      service: name=$project_name state=restarted
+
+
+- hosts: vagrant-web-servers
+  user: vagrant
+  sudo: True
+
+  tasks:
+    - name: wait for gunicorn to settle
+      wait_for: port=$backend_port delay=10
+
+    - name: restart nginx
+      service: name=nginx state=restarted

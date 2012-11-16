@@ -1,0 +1,20 @@
+DEBUG = False
+TEMPLATE_DEBUG = DEBUG
+
+AWS_ACCESS_KEY_ID = '1H82F3WVH8GA8WZR6WR2'
+AWS_SECRET_ACCESS_KEY = '3pr5Dq4lYWbji9LarUhEFgi+tHh5iJDa2EeuUE8V'
+AWS_STORAGE_BUCKET_NAME = 'tinkhan-static2'
+
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': '{{ database_name }}',                      # Or path to database file if using sqlite3.
+        'USER': '{{ database_user }}',                      # Not used with sqlite3.
+        'PASSWORD': '{{ database_password }}',                  # Not used with sqlite3.
+        'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '',                      # Set to empty string for default. Not used with sqlite3.
+    }
+}
+
+SITE_ID = {{ django_site_id }}
