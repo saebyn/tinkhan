@@ -25,6 +25,9 @@ class TinCanEndpoint(models.Model):
     path = models.CharField(max_length=255, default='/TCAPI/statements')
     user = models.ForeignKey(User, related_name='tincan_endpoints')
 
+    def __unicode__(self):
+        return u'{0}@{1}'.format(self.username, self.hostname)
+
     @property
     def url(self):
         parts = ['http', self.hostname, self.path, '', '', '']
