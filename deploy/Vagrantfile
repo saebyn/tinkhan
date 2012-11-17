@@ -9,9 +9,11 @@ Vagrant::Config.run do |config|
     # point Vagrant at the location of your playbook you want to run
     ansible.playbook = "vagrant-ubuntu.yml"
 
-    # the Vagrant VM will be put in this host group change this should
+    ansible.inventory_file = "vagrant-inventory"
+
+    # the Vagrant VM will be put in this host group. this should
     # match the host group in your playbook you want to test
-    ansible.hosts = "vagrant-web-servers"
+    #ansible.hosts = "web-servers, database-servers"
 
   end
 end

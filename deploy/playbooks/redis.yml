@@ -1,0 +1,15 @@
+---
+- hosts: redis-servers
+  sudo: True
+
+  tasks:
+    - name: install $item
+      apt: pkg=$item state=latest
+      with_items:
+        - redis-server
+      tags:
+        - packages
+
+    - name: redis
+      service: name=redis-server enabled=yes state=started
+

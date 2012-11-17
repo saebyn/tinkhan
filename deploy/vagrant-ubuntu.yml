@@ -1,5 +1,6 @@
 ---
 - hosts: all
+  user: vagrant
 
   vars:
   - server_name: tinkhan.saebyn.info
@@ -9,7 +10,8 @@
   - database_password: 
   - source_path: /home/john/Projects/tinkhan
   - backend_port: 5000
+  - git_branch: master
 
-- include: playbooks/vagrant-base.yml
-- include: playbooks/vagrant-database.yml
-- include: playbooks/vagrant-webserver.yml
+- include: playbooks/base.yml
+- include: playbooks/database.yml
+- include: playbooks/webserver.yml

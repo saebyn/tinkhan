@@ -1,6 +1,5 @@
 ---
-- hosts: vagrant-web-servers
-  user: vagrant
+- hosts: web-servers
   sudo: True
 
   vars:
@@ -10,6 +9,24 @@
   - nginx_upgrading_file: /var/www/$project_name.upgrading
 
   tasks:
+    - name: install $item
+      apt: pkg=$item state=latest
+      with_items:
+        - rubygems  # for foreman
+        - python-dev
+        - libpq-dev
+        - python-psycopg2
+        - nginx
+        - python-pip
+        - git
+      tags:
+        - packages
+
+    - name: install foreman
+      command: gem install foreman
+      tags:
+        - packages
+
     - name: ensure /var/www exists
       command: mkdir -p /var/www
 
@@ -27,31 +44,22 @@
     - name: nginx
       service: name=nginx enabled=yes
 
-    - name: redis
-      service: name=redis-server enabled=yes state=started
-
     - name: stop $project_name service
       service: name=$project_name state=stopped
       ignore_errors: True
 
   handlers:
-    - name: restart nginx
-      service: name=nginx state=restarted
-
+    - include: ../handlers.yml
 
 - hosts: 127.0.0.1
   connection: local
-
-  vars:
-  - git_branch: master
 
   tasks:
     - name: package project source
       command: git archive --format=tar.gz -o latest.tar.gz $git_branch chdir=$source_path
 
 
-- hosts: vagrant-web-servers
-  user: vagrant
+- hosts: web-servers
   sudo: True
 
   vars:
@@ -115,13 +123,10 @@
       action: django_user project_path=/var/www/$server_name settings=tinkhan.settings username=admin is_staff=yes is_superuser=yes email=john@saebyn.info password= state=present
 
   handlers:
-    # Restart gunicorn, celery workers, etc via foreman's upstart config
-    - name: restart project
-      service: name=$project_name state=restarted
+    - include: ../handlers.yml
 
 
-- hosts: vagrant-web-servers
-  user: vagrant
+- hosts: web-servers
   sudo: True
 
   tasks:

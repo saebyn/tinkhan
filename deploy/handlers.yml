@@ -1,0 +1,7 @@
+---
+- name: restart nginx
+  service: name=nginx state=restarted
+
+# Restart gunicorn, celery workers, etc via foreman's upstart config
+- name: restart project
+  service: name=$project_name state=restarted

@@ -1,0 +1,52 @@
+---
+- hosts: database-servers
+  sudo: True
+
+  tasks:
+    - name: install $item
+      apt: pkg=$item state=latest
+      with_items:
+        - postgresql
+        - python-psycopg2
+      tags:
+        - packages
+
+
+- hosts: database-servers
+  sudo_user: postgres
+  sudo: True
+
+  vars:
+    - postgres_version: 9.1
+
+  tasks:
+    - name: install postgres config file
+      template: src=../templates/postgresql.j2 dest=/etc/postgresql/$postgres_version/main/postgresql.conf
+      tags:
+        - configuration
+
+    - name: restart postgresql
+      service: name=postgresql state=restarted
+      tags:
+        - configuration
+
+    - name: create database
+      postgresql_db: name=$database_name state=present
+      tags:
+        - configuration
+    
+    - name: create postgres user
+      postgresql_user: db=$database_name user=$database_user password=$database_password role_attr_flags=NOCREATEDB,NOSUPERUSER state=present
+      tags:
+        - configuration
+
+
+- hosts: database-servers
+  sudo: True
+
+  tasks:
+    - name: configure postgres service
+      service: name=postgresql enabled=yes state=started
+      tags:
+        - configuration
+        - packages
