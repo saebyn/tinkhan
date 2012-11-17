@@ -1,8 +1,8 @@
 [web-servers]
-127.0.0.1:2222
+ip
 
 [database-servers]
-127.0.0.1:2222
+ip
 
 [redis-servers]
-127.0.0.1:2222
+ip

@@ -1,0 +1,17 @@
+---
+- hosts: all
+  user: john
+
+  vars:
+  - server_name: tinkhan.saebyn.info
+  - project_name: tinkhan
+  - database_name: tinkhan
+  - database_user: tinkhan
+  - database_password: 
+  - source_path: /home/john/Projects/tinkhan
+  - backend_port: 5000
+  - git_branch: master
+
+- include: playbooks/base.yml
+- include: playbooks/database.yml
+- include: playbooks/webserver.yml
