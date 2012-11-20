@@ -29,7 +29,7 @@ class TinCanEndpoint(models.Model):
         if self.username or self.hostname:
             return u'{0}@{1}'.format(self.username, self.hostname)
         else:
-            return _(u'Unconfigured Endpoint')
+            return u'Unconfigured Endpoint'
 
     @property
     def url(self):
