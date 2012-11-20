@@ -26,7 +26,10 @@ class TinCanEndpoint(models.Model):
     user = models.ForeignKey(User, related_name='tincan_endpoints')
 
     def __unicode__(self):
-        return u'{0}@{1}'.format(self.username, self.hostname)
+        if self.username or self.hostname:
+            return u'{0}@{1}'.format(self.username, self.hostname)
+        else:
+            return _(u'Unconfigured Endpoint')
 
     @property
     def url(self):
