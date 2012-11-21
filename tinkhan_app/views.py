@@ -200,7 +200,7 @@ class ConfirmationMixin(object):
                 "No URL to redirect to. Provide a success_url.")
 
 
-class SendImportEmailView(ConfirmationMixin, TemplateView):
+class SendImportEmailView(LoginRequiredMixin, ConfirmationMixin, TemplateView):
     template_name = 'tinkhan_app/send_import_email_confirm.html'
 
     def get_context_data(self, **kwargs):
