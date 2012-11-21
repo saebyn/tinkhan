@@ -218,7 +218,7 @@ class SendImportEmailView(ConfirmationMixin, TemplateView):
 send_import_email = SendImportEmailView.as_view()
 
 
-class ConfigureTCAPIEndpointView(UpdateView):
+class ConfigureTCAPIEndpointView(LoginRequiredMixin, UpdateView):
     model = TinCanEndpoint
     form_class = TinCanEndpointForm
 
