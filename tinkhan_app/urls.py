@@ -36,4 +36,8 @@ urlpatterns = patterns('tinkhan_app.views',
     url(r'^configure/(?P<pk>\d+)/$',
         'configure_tcapi_endpoint',
         name='configure_tcapi_endpoint'),
+
+    url(r'^problem/(?P<pk>\d+)/$',
+        'khan_import_auth_problem',
+        name='khan_import_auth_problem'),
 )
