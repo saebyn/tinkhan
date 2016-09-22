@@ -1,5 +1,5 @@
+TODO
 venv
-latest.tar.gz
 deploy/.vagrant
 celeryev.pid
 settings_local.py

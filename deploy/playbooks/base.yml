@@ -5,3 +5,6 @@
   tasks:
     - name: update apt repo
       apt: update_cache=yes
+
+    - name: install ntp
+      apt: pkg=ntp state=installed
